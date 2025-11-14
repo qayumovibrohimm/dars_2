@@ -2,14 +2,15 @@ from django.db import models
 from decimal import Decimal
 from django.templatetags.static import static
 
-# Create your models here.
 
+# Create your models here.
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
+
 
 class Category(BaseModel):
     title = models.CharField(max_length=255, unique=True)
@@ -33,9 +34,6 @@ class Product(BaseModel):
                                  related_name='products',
                                  null=True, blank=True)
 
-
-
-
     @property
     def discounted_price(self):
         if self.discount:
@@ -43,14 +41,27 @@ class Product(BaseModel):
 
         return self.price
 
-
     @property
     def get_image_url(self):
         if not self.image:
-            return static('app/images/OIP.webp')
-
+            return static('app/images/not_found_image.avif')
         return self.image.url
-
 
     def __str__(self):
         return self.name
+
+
+
+
+class Order(BaseModel):
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=30)
+    quantity = models.PositiveIntegerField(default=1)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.name} : {self.phone}'
+
+
+
+
