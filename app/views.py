@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from .models import Category, Product
 from django.http import JsonResponse
-from app.forms import ProductModelForm, OrderModelForm
+from app.forms import ProductModelForm, OrderModelForm, CommentForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
@@ -104,33 +104,46 @@ def create_order(request, pk):
     if request.method == 'POST':
         print('Order Post sending ....')
         form = OrderModelForm(request.POST)
+
         if form.is_valid():
             print('form valid')
             order = form.save(commit=False)
             order.product = product
+
             if order.quantity > product.stock:
-                messages.add_message(
-                    request,
-                    messages.ERROR,
-                    'Dont enough quantity'
-                )
+                messages.error(request, 'Dont enough quantity')
+
             else:
                 product.stock -= order.quantity
                 print('order valid ')
                 product.save()
                 order.save()
-                messages.add_message(
-                    request,
-                    messages.ERROR,
-                    'Order successfully sent✅'
-                )
-                return redirect('app:detail', product_id)
+
+                messages.success(request, 'Order successfully sent ✅')
+
+                return redirect('app:detail', product_id=product.id)
+
     else:
         form = OrderModelForm()
 
+    if request.method == 'POST' and 'comment_submit' in request.POST:
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            comment.product = product
+            comment.save()
+            messages.success(request, "Comment added successfully ✅")
+            return redirect('app:detail', product_id=product.id)
+    else:
+        comment_form = CommentForm()
+
+
+
     context = {
         'form': form,
-        'product': product
+        'product': product,
+        'comment_form': comment_form,
+        'comments': product.comments.all().order_by('-created_at'),
     }
 
     return render(request, 'app/detail.html', context)
