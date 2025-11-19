@@ -17,7 +17,10 @@ class OrderModelForm(forms.ModelForm):
         model = Order
         exclude = ('product',)
 
-class CommentForm(forms.ModelForm):
+class CommentForm(forms.Form):
     class Meta:
         model = Comment
         fields = ['name', 'email', 'text']
+
+
+# class EmailForm(forms.F):

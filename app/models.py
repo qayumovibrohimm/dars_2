@@ -33,6 +33,14 @@ class Product(BaseModel):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL,
                                  related_name='products',
                                  null=True, blank=True)
+    my_order = models.PositiveIntegerField(
+        default=0,
+        blank=False,
+        null=False,
+    )
+
+    class Meta:
+        ordering = ['my_order']
 
     @property
     def discounted_price(self):
